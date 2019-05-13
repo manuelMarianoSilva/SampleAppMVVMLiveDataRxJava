@@ -5,7 +5,6 @@ import android.util.Pair;
 
 import com.mms.solsticechallenge.model.User;
 import com.mms.solsticechallenge.repositories.UserRepository;
-import com.mms.solsticechallenge.repositories.UserRepositoryImpl;
 import com.mms.solsticechallenge.utils.UserListContainer;
 
 import java.util.List;
@@ -56,7 +55,9 @@ public class MainActivityViewModel extends ViewModel {
         errorLoading.setValue(false);
     }
 
-    public void resetUserList() {
-        repository.resetUserList();
+    public void updateUserListWithNewFavoriteCount() {
+        Pair<List<User>, Integer> userListFavoritePair = repository.refreshUserList();
+        UserListContainer.referenceUserList.setValue(userListFavoritePair.first);
+        UserListContainer.referenceNumberOfFavorites.setValue(userListFavoritePair.second);
     }
 }

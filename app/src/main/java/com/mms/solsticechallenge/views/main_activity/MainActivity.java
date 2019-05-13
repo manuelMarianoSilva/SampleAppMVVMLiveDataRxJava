@@ -16,7 +16,6 @@ import javax.inject.Inject;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -87,7 +86,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityRecyc
     @Override
     protected void onResume() {
         super.onResume();
-        viewModel.resetUserList();
+        if (UserListContainer.referenceUserList.getValue() != null)
+            viewModel.updateUserListWithNewFavoriteCount();
     }
 
 }

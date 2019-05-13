@@ -10,5 +10,5 @@ import io.reactivex.Observable;
 
 public interface UserRepository {
     Observable<Pair<List<User>, Integer>> fetchUserListFromWS();
-    void resetUserList();
+    Pair<List<User>, Integer> refreshUserList();
 }

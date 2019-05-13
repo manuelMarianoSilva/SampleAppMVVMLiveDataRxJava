@@ -4,11 +4,11 @@ import android.util.Pair;
 
 import com.mms.solsticechallenge.model.User;
 import com.mms.solsticechallenge.networking.UserListDAO;
-import com.mms.solsticechallenge.utils.ListClassifier;
 import com.mms.solsticechallenge.utils.UserListContainer;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -29,22 +29,31 @@ public class UserRepositoryImpl implements UserRepository {
 
         Observable<List<User>> userListObs = userListDAO
                 .fetchListOfUsersFromWS()
-                .map(ListClassifier::sortListAlphabetically);
+                .map(this::sortListAlphabetically);
 
         Observable<Integer> numberOfFavoritesObs = userListObs
-                .map(ListClassifier::getNumberOfFavorites);
+                .map(this::getNumberOfFavorites);
 
         return Observable.zip(userListObs, numberOfFavoritesObs, Pair::new);
     }
 
     @Override
-    public void resetUserList() {
-        if (UserListContainer.referenceUserList.getValue() != null){
-            List<User> newlySortedUsers = ListClassifier.sortListAlphabetically(Objects.requireNonNull(UserListContainer.referenceUserList.getValue()));
-            Integer newNumberOfFavs = ListClassifier.getNumberOfFavorites(Objects.requireNonNull(UserListContainer.referenceUserList.getValue()));
+    public Pair<List<User>, Integer> refreshUserList() {
+        List<User> newlySortedUsers = sortListAlphabetically(Objects.requireNonNull(UserListContainer.referenceUserList.getValue()));
+        Integer newNumberOfFavs = getNumberOfFavorites(Objects.requireNonNull(UserListContainer.referenceUserList.getValue()));
+        return new Pair<>(newlySortedUsers, newNumberOfFavs);
+    }
 
-            UserListContainer.referenceUserList.setValue(newlySortedUsers);
-            UserListContainer.referenceNumberOfFavorites.setValue(newNumberOfFavs);
-        }
+    private List<User> sortListAlphabetically(List<User> users){
+        return users.stream()
+                .sorted((user1, user2) -> user1.getName().compareTo(user2.getName()))
+                .sorted((user1, user2) -> user2.getIsFavorite().compareTo(user1.getIsFavorite()))
+                .collect(Collectors.toList());
+    }
+
+    private Integer getNumberOfFavorites(List<User> users) {
+        return (int)users.stream()
+                .filter(User::getIsFavorite)
+                .count();
     }
 }
